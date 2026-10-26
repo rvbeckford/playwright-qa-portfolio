@@ -1,45 +1,45 @@
-from playwright.sync_api import Page, expect
-
-
-def login(page: Page):
-    page.goto("https://www.saucedemo.com/")
-    page.get_by_placeholder("Username").fill("standard_user")
-    page.get_by_placeholder("Password").fill("secret_sauce")
-    page.get_by_role("button", name="Login").click()
+from playwright.sync_api import Page
+from pages.login_page import LoginPage
+from pages.inventory_page import InventoryPage
+from pages.cart_page import CartPage
+from pages.checkout_page import CheckoutPage
 
 
 def test_checkout_happy_path(page: Page):
-    login(page)
-    page.locator("[data-test='add-to-cart-sauce-labs-backpack']").click()
-    page.locator("[data-test='add-to-cart-sauce-labs-bike-light']").click()
-    expect(page.locator("[data-test='shopping-cart-badge']")).to_have_text("2")
-    page.locator("[data-test='shopping-cart-link']").click()
-    page.locator("[data-test='checkout']").click()
-    page.locator("[data-test='firstName']").fill("Test")
-    page.locator("[data-test='lastName']").fill("User")
-    page.locator("[data-test='postalCode']").fill("12345")
-    page.locator("[data-test='continue']").click()
-    page.locator("[data-test='finish']").click()
-    expect(page.locator("[data-test='complete-header']")).to_have_text(
-        "Thank you for your order!"
-    )
+    login_page = LoginPage(page)
+    inventory_page = InventoryPage(page)
+    cart_page = CartPage(page)
+    checkout_page = CheckoutPage(page)
+    login_page.goto()
+    login_page.login("standard_user", "secret_sauce")
+    inventory_page.add_to_cart("sauce-labs-backpack")
+    inventory_page.add_to_cart("sauce-labs-bike-light")
+    inventory_page.expect_cart_count(2)
+    inventory_page.go_to_cart()
+    cart_page.checkout()
+    checkout_page.fill_info("Test", "User", "12345")
+    checkout_page.continue_checkout()
+    checkout_page.finish_order()
+    checkout_page.expect_order_complete()
 
 
 def test_sort_price_low_to_high(page: Page):
-    login(page)
-    page.locator("[data-test='product-sort-container']").select_option("lohi")
-    expect(page.locator("[data-test='inventory-item-name']").first).to_have_text(
-        "Sauce Labs Onesie"
-    )
-    expect(page.locator("[data-test='inventory-item-price']").first).to_have_text(
-        "$7.99"
-    )
+    login_page = LoginPage(page)
+    inventory_page = InventoryPage(page)
+    login_page.goto()
+    login_page.login("standard_user", "secret_sauce")
+    inventory_page.sort_low_to_high()
+    inventory_page.expect_first_item("Sauce Labs Onesie", "$7.99")
 
 
 def test_remove_item_drops_badge(page: Page):
-    login(page)
-    page.locator("[data-test='add-to-cart-sauce-labs-backpack']").click()
-    page.locator("[data-test='add-to-cart-sauce-labs-bike-light']").click()
-    page.locator("[data-test='shopping-cart-link']").click()
-    page.locator("[data-test='remove-sauce-labs-backpack']").click()
-    expect(page.locator("[data-test='shopping-cart-badge']")).to_have_text("1")
+    login_page = LoginPage(page)
+    inventory_page = InventoryPage(page)
+    cart_page = CartPage(page)
+    login_page.goto()
+    login_page.login("standard_user", "secret_sauce")
+    inventory_page.add_to_cart("sauce-labs-backpack")
+    inventory_page.add_to_cart("sauce-labs-bike-light")
+    inventory_page.go_to_cart()
+    cart_page.remove_item("sauce-labs-backpack")
+    cart_page.expect_cart_count(1)
