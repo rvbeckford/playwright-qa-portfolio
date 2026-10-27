@@ -1,32 +1,32 @@
+import pytest
 from playwright.sync_api import Page, expect
-from pages.login_page import LoginPage
 
 
-def test_successful_login(page: Page):
-    login_page = LoginPage(page)
+@pytest.mark.smoke
+def test_successful_login(login_page, page: Page):
     login_page.goto()
     login_page.login("standard_user", "secret_sauce")
     expect(page).to_have_url("https://www.saucedemo.com/inventory.html")
 
 
-def test_locked_out_user(page: Page):
-    login_page = LoginPage(page)
+@pytest.mark.regression
+@pytest.mark.parametrize(
+    "username,password,error",
+    [
+        (
+            "locked_out_user",
+            "secret_sauce",
+            "Epic sadface: Sorry, this user has been locked out.",
+        ),
+        (
+            "standard_user",
+            "wrong_password",
+            "Epic sadface: Username and password do not match any user in this service",
+        ),
+        ("", "secret_sauce", "Epic sadface: Username is required"),
+    ],
+)
+def test_login_failures(login_page, username, password, error):
     login_page.goto()
-    login_page.login("locked_out_user", "secret_sauce")
-    login_page.expect_error("Epic sadface: Sorry, this user has been locked out.")
-
-
-def test_wrong_password(page: Page):
-    login_page = LoginPage(page)
-    login_page.goto()
-    login_page.login("standard_user", "wrong_password")
-    login_page.expect_error(
-        "Epic sadface: Username and password do not match any user in this service"
-    )
-
-
-def test_empty_username(page: Page):
-    login_page = LoginPage(page)
-    login_page.goto()
-    login_page.login("", "secret_sauce")
-    login_page.expect_error("Epic sadface: Username is required")
+    login_page.login(username, password)
+    login_page.expect_error(error)
