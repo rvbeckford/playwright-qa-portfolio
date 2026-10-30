@@ -4,7 +4,7 @@ Playwright Tests
 
 ](https://github.com/rvbeckford/playwright-qa-portfolio/actions/workflows/playwright.yml)
 
-A Python + Playwright + pytest test suite built hands-on, session by session. 23 tests, all passing, running in GitHub Actions on every push.
+A Python + Playwright + pytest test suite built hands-on, session by session. 25 tests, all passing, running in GitHub Actions on every push.
 
 What it covers
 SauceDemo — login (happy path + locked-out, wrong password, empty username), cart and checkout journeys, sort by price, remove-from-cart badge checks
@@ -16,6 +16,7 @@ test_saucedemo_login.py, test_cart_checkout.py, test_the_internet.py, test_api.p
 conftest.py — login_page and logged_in_page fixtures
 pytest.ini — smoke/regression markers, screenshots and traces on failure
 visual screenshot comparison + axe accessibility scan on the login page
+mobile device emulation to the coverage list
 How to run it
 python -m venv .venv
 .venv\Scripts\activate (Windows) or source .venv/bin/activate (Mac/Linux)
